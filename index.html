@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dexter Antivirus — Защита нового поколения</title>
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --green: #00ff41;
+            --green-dark: #0b3d0b;
+            --green-mid: #1a7a1a;
+            --font: 'Consolas', 'Courier New', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--green);
+            font-family: var(--font);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* фон "матрица" из падающих символов */
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.08;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 30%, #0f4d0f20, #000000 80%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 90%;
+            max-width: 900px;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        /* анимированный заголовок */
+        .logo {
+            font-size: 3.5rem;
+            font-weight: bold;
+            letter-spacing: 0.2em;
+            color: var(--green);
+            text-shadow: 0 0 20px var(--green), 0 0 40px var(--green-dark), 0 0 80px var(--green);
+            margin-bottom: 0.5rem;
+            animation: flicker 2s infinite alternate;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.95; text-shadow: 0 0 20px var(--green), 0 0 40px var(--green-dark), 0 0 80px var(--green); }
+            100% { opacity: 1; text-shadow: 0 0 30px var(--green), 0 0 60px #00cc33, 0 0 100px #009933; }
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #00cc44;
+            margin-bottom: 2rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            opacity: 0.9;
+        }
+
+        .shield-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 0 20px #00ff41);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .features {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .feature-card {
+            background: rgba(0, 50, 0, 0.2);
+            border: 1px solid var(--green-mid);
+            border-radius: 12px;
+            padding: 1.5rem;
+            width: 200px;
+            backdrop-filter: blur(5px);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 25px rgba(0, 255, 65, 0.4);
+            border-color: var(--green);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 0.3rem;
+            color: #b8ffb8;
+        }
+
+        .feature-desc {
+            font-size: 0.8rem;
+            color: #7acc7a;
+        }
+
+        .download-btn {
+            display: inline-block;
+            background: var(--green);
+            color: #000;
+            font-weight: bold;
+            font-family: var(--font);
+            font-size: 1.4rem;
+            padding: 0.8rem 2.2rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            box-shadow: 0 0 30px var(--green-dark), 0 0 60px rgba(0,255,65,0.5);
+            transition: all 0.3s ease;
+            margin: 2rem 0 1rem;
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+        }
+
+        .download-btn:hover {
+            background: #00cc44;
+            box-shadow: 0 0 40px #00ff41, 0 0 80px #009933;
+            transform: scale(1.05);
+        }
+
+        .download-btn:active {
+            transform: scale(0.98);
+        }
+
+        .info-text {
+            font-size: 0.9rem;
+            color: #8cff8c;
+            margin-top: 1rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.5;
+            background: rgba(0,20,0,0.6);
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px dashed var(--green-mid);
+        }
+
+        .footer {
+            margin-top: 2rem;
+            font-size: 0.7rem;
+            opacity: 0.5;
+            letter-spacing: 0.1em;
+        }
+
+        canvas#matrixCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.08;
+            pointer-events: none;
+        }
+
+        /* адаптив */
+        @media (max-width: 600px) {
+            .logo { font-size: 2.2rem; }
+            .features { flex-direction: column; align-items: center; }
+            .feature-card { width: 90%; max-width: 250px; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrixCanvas"></canvas>
+
+    <div class="container">
+        <div class="shield-icon">🛡️</div>
+        <h1 class="logo">DEXTER</h1>
+        <p class="subtitle">Antivirus System</p>
+
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <div class="feature-title">Мгновенная проверка</div>
+                <div class="feature-desc">Запуск встроенного сканера MRT за секунду</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🧠</div>
+                <div class="feature-title">Умная защита</div>
+                <div class="feature-desc">Эвристический анализ и удаление угроз</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <div class="feature-title">Полная конфиденциальность</div>
+                <div class="feature-desc">Не отправляет данные, работает локально</div>
+            </div>
+        </div>
+
+        <button class="download-btn" id="downloadBtn">⬇ Скачать антивирус</button>
+        <p class="info-text">
+            После скачивания запустите файл <strong>Dexter.bat</strong>.<br>
+            Откроется меню в чёрно-зелёном стиле с кнопкой «Проверить компьютер».<br>
+            При нажатии автоматически запустится Microsoft Malicious Software Removal Tool.
+        </p>
+        <p class="footer">© 2026 Dexter Security. Все права защищены.</p>
+    </div>
+
+    <script>
+        // === Матрица (падающие символы) для фона ===
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*';
+        const fontSize = 14;
+        const columns = Math.floor(canvas.width / fontSize);
+        const drops = Array(columns).fill(1);
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#00ff41';
+            ctx.font = fontSize + 'px monospace';
+            for (let i = 0; i < drops.length; i++) {
+                const text = letters[Math.floor(Math.random() * letters.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+        setInterval(drawMatrix, 45);
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // === Скачивание bat-файла ===
+        document.getElementById('downloadBtn').addEventListener('click', function() {
+            const batContent = 
+`@echo off
+chcp 65001 >nul
+powershell -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -Command ^
+"Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; ^
+$f=New-Object System.Windows.Forms.Form; ^
+$f.Text='Dexter Antivirus'; ^
+$f.Size=New-Object System.Drawing.Size(420,200); ^
+$f.StartPosition='CenterScreen'; ^
+$f.BackColor=[System.Drawing.Color]::Black; ^
+$f.ForeColor=[System.Drawing.Color]::Lime; ^
+$f.Font=New-Object System.Drawing.Font('Consolas',12); ^
+$l=New-Object System.Windows.Forms.Label; ^
+$l.Text='Dexter Antivirus'; ^
+$l.Font=New-Object System.Drawing.Font('Consolas',18,[System.Drawing.FontStyle]::Bold); ^
+$l.ForeColor=[System.Drawing.Color]::Lime; ^
+$l.AutoSize=$true; ^
+$l.Location=New-Object System.Drawing.Point(100,20); ^
+$f.Controls.Add($l); ^
+$b=New-Object System.Windows.Forms.Button; ^
+$b.Text='Проверить компьютер'; ^
+$b.Size=New-Object System.Drawing.Size(200,40); ^
+$b.Location=New-Object System.Drawing.Point(110,90); ^
+$b.BackColor=[System.Drawing.Color]::ForestGreen; ^
+$b.ForeColor=[System.Drawing.Color]::Black; ^
+$b.Font=New-Object System.Drawing.Font('Consolas',11,[System.Drawing.FontStyle]::Bold); ^
+$b.FlatStyle='Flat'; ^
+$b.FlatAppearance.BorderColor=[System.Drawing.Color]::Lime; ^
+$b.FlatAppearance.BorderSize=2; ^
+$b.Add_Click({ ^
+    $mrt = Join-Path $env:SystemRoot 'System32\\mrt.exe'; ^
+    if (Test-Path $mrt) { ^
+        Start-Process $mrt -WindowStyle Normal ^
+    } else { ^
+        [System.Windows.Forms.MessageBox]::Show('MRT.exe не найден.','Ошибка','OK','Error') ^
+    } ^
+}); ^
+$f.Controls.Add($b); ^
+$f.ShowDialog()"`;
+
+            const blob = new Blob([batContent], { type: 'application/bat' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Dexter_Antivirus.bat';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+    </script>
+</body>
+</html>
